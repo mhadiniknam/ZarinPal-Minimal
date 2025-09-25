@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>درگاه پرداخت زرین‌پال</title>
+    <style>
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #6c5ce7;
+            color: white;
+            border: none;
+            padding: 14px;
+            width: 100%;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #5a4fcf;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+            text-align: center;
+            font-weight: bold;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .sandbox-notice {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 14px;
+        }
+    </style>
+    <link href="https://cdn.jsdelivr.net/npm/vazirmatn@33.0.0/Vazirmatn-font-face.css" rel="stylesheet">
+</head>
+<body>
+    <div class="sandbox-notice">
+        حالت آزمایشی (سندباکس) - هیچ پرداخت واقعی انجام نمی‌شود
+    </div>
+    
+    <h1>درگاه پرداخت زرین‌پال</h1>
+    
+    <form id="paymentForm">
+        <div class="form-group">
+            <label for="amount">مبلغ (تومان)</label>
+            <input type="number" id="amount" min="1000" step="100" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="description">توضیحات</label>
+            <input type="text" id="description" value="انتقال به حساب شخصی">
+        </div>
+        
+        <div class="form-group">
+            <label for="currency">واحد پولی</label>
+            <select id="currency">
+                <option value="IRT">تومان</option>
+                <option value="IRR">ریال</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="mobile">شماره تماس (اختیاری)</label>
+            <input type="tel" id="mobile" pattern="0[0-9]{10}">
+        </div>
+        
+        <div class="form-group">
+            <label for="email">ایمیل (اختیاری)</label>
+            <input type="email" id="email">
+        </div>
+        
+        <button type="submit">پرداخت</button>
+    </form>
+    
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('paymentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const amount = document.getElementById('amount').value;
+            const description = document.getElementById('description').value;
+            const currency = document.getElementById('currency').value;
+            const mobile = document.getElementById('mobile').value;
+            const email = document.getElementById('email').value;
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'info';
+            resultDiv.textContent = 'در حال اتصال به درگاه پرداخت...';
+            
+            try {
+                const response = await fetch('/api/payment-request', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        amount: amount,
+                        description: description,
+                        currency: currency,
+                        mobile: mobile,
+                        email: email
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Redirect to Zarinpal payment page
+                    window.location.href = data.payment_url;
+                } else {
+                    resultDiv.className = 'error';
+                    resultDiv.textContent = `خطا: ${data.message}`;
+                    if (data.errors) {
+                        console.error('Zarinpal errors:', data.errors);
+                    }
+                }
+            } catch (error) {
+                resultDiv.className = 'error';
+                resultDiv.textContent = 'خطا در ارتباط با سرور. لطفا دوباره تلاش کنید.';
+                console.error('Error:', error);
+            }
+        });
+    </script>
+</body>
+</html>
