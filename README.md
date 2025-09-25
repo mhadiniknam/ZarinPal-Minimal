@@ -1,6 +1,6 @@
 # ZarinPal-Minimal
 
-<img src="Example" alt="Alt text" width="300"/>
+<img src="Example.png" alt="Alt text" width="300"/>
 
 A minimal, developer-friendly Node.js integration scaffold for the **ZarinPal** payment gateway.  
 This repository shows how to:
